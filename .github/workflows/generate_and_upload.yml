@@ -18,11 +18,11 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pandas numpy pyarrow faker
+          pip install pandas numpy pyarrow faker -e .
 
       - name: Run Data Generator (SCALE=1.0)
         run: |
-          python main.py --scale 1.0 --output ./production_output
+          python -m src.retail_gen.main --scale 1.0 --output ./production_output
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
