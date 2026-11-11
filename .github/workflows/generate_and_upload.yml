@@ -20,9 +20,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas numpy pyarrow faker -e .
 
-      - name: Run Data Generator (SCALE=1.0)
+      - name: Run Data Generator
         run: |
-          python -m src.retail_gen.main --scale 1.0 --output ./production_output
+          python -m src.retail_gen.main
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -33,4 +33,4 @@ jobs:
 
       - name: Sync Output to S3 Bucket
         run: |
-          aws s3 sync ./production_output s3://${{ secrets.AWS_S3_BUCKET }}/
+          aws s3 sync ./output s3://${{ secrets.AWS_S3_BUCKET }}/
