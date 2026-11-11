@@ -1,0 +1,36 @@
+name: Generate Retail Data and Push to S3
+
+on:
+  workflow_dispatch: # Allows manual trigger from the GitHub UI
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas numpy pyarrow faker
+
+      - name: Run Data Generator (SCALE=1.0)
+        run: |
+          python main.py --scale 1.0 --output ./production_output
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1 # Change this if your S3 bucket is in a different region
+
+      - name: Sync Output to S3 Bucket
+        run: |
+          aws s3 sync ./production_output s3://${{ secrets.AWS_S3_BUCKET }}/
