@@ -6,9 +6,15 @@ on:
 jobs:
   build-and-upload:
     runs-on: ubuntu-latest
+    timeout-minutes: 360
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -21,6 +27,8 @@ jobs:
           pip install pandas numpy pyarrow faker -e .
 
       - name: Run Data Generator
+        env:
+          SCALE: "1.0"
         run: |
           python -m src.retail_gen.main
 
@@ -29,8 +37,8 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1 # Change this if your S3 bucket is in a different region
+          aws-region: eu-north-1 # Stockholm, matches the bucket
 
       - name: Sync Output to S3 Bucket
         run: |
-          aws s3 sync ./output s3://${{ secrets.AWS_S3_BUCKET }}/
+          aws s3 sync ./output s3://${{ secrets.AWS_S3_BUCKET }}/scale-1.0/
